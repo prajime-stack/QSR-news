@@ -1,0 +1,32 @@
+name: QSR news bot
+
+on:
+  schedule:
+    - cron: "30 2 * * *"   # 08:00 IST daily
+    - cron: "30 10 * * *"  # 16:00 IST daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run bot
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: praji.me@gmail.com
+        run: python qsr_news_bot.py
+      - name: Save seen items
+        run: |
+          git config user.name "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add seen.json || true
+          git commit -m "update seen" || echo "no changes"
+          git push || true
